@@ -18,6 +18,7 @@ class App extends Component {
         { id: "3", name: "Alex", salary: 5000, increase: false, rise: false },
       ],
       term: "",
+      filter: "all",
     };
     this.maxId = 4;
   }
@@ -86,28 +87,45 @@ class App extends Component {
   };
   onUpdateSearch = (term) => {
     this.setState({
-      term
-    })
+      term,
+    });
+  };
+  filterPost = (items, filter) => {
+    switch (filter) {
+      case "rise":
+        return items.filter((item) => item.rise);
+      case "moreThen1000$":
+        return items.filter((item) => item.salary > 1000);
+      default:
+        return items;
+    }
+  };
+  onFilterSelect = (filter) => {
+      this.setState({filter})
   }
 
   render() {
     const employers = this.state.data.length;
     const increased = this.state.data.filter((item) => item.increase).length;
-    const { data, term } = this.state;
-    const visibleData = this.searchEmp(data, term);
+    const { data, term, filter } = this.state;
+    const visibleData = this.filterPost(this.searchEmp(data, term), filter);
 
     return (
       <div className="app">
         <AppInfo employers={employers} increased={increased} />
         <div className="search-panel">
-          <SearchPanel onUpdateSearch={this.onUpdateSearch}/>
-          <AppFilter />
+          <SearchPanel onUpdateSearch={this.onUpdateSearch} />
+          <AppFilter filter={filter} onFilterSelect={this.onFilterSelect} />
         </div>
-        <EmployersList
-          data={visibleData}
-          onDelete={this.deleteItem}
-          onToggleProp={this.onToggleProp}
-        />
+        {visibleData.length === 0 ? (
+          <h1 style={{textAlign: 'center'}}>Нет ни одного сотрудника</h1>
+        ) : (
+          <EmployersList
+            data={visibleData}
+            onDelete={this.deleteItem}
+            onToggleProp={this.onToggleProp}
+          />
+        )}
         <EmployersAddForm onAdd={this.addItem} />
       </div>
     );
